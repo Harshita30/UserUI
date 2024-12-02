@@ -19,6 +19,7 @@ const Table = () => {
   const [limit, setLimit] = useState(5);  // Set number of items per page
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('')
 
 
   // Fetch users data with pagination
@@ -39,10 +40,15 @@ const Table = () => {
     }
   };
 
+
   // Fetch data when component mounts or page changes
    useEffect(() => {
     fetchUsers(currentPage);
   }, [currentPage, limit]);  // Rerun when currentPage or limit changes
+
+  const filteredData = users.filter((data) =>{
+    return (data.name.toLowerCase().includes(searchQuery.toLowerCase()) || data.email.toLowerCase().includes(searchQuery.toLowerCase()))
+  })
 
   // Handle page change
   const handlePageChange = (page)=>{
@@ -55,13 +61,18 @@ const Table = () => {
     setCurrentPage(1);  // Reset to the first page when limit changes
   }
 
+  const searchQueryHandler = (e) =>{
+    setSearchQuery(e.target.value)
+  }
+
   // console.log('users', users)
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
   return (
     <div>
-      <h1>Welcome to the React Table Example</h1>
+      <h2>Users List <br/>(Pagination with Next and Previous Buttons, frontend search/filter feature)</h2>
+      <input type='text' placeholder="Search by name or email..." value={searchQuery} onChange={searchQueryHandler}></input>
       <table border="1" cellPadding="10" cellSpacing="0">
         <thead>
           <tr>
@@ -73,15 +84,21 @@ const Table = () => {
           </tr>
         </thead>
         <tbody>
-          {users.map((user,i) => (
-            <tr key={user._id}>
-              <td>{i+1}</td>
-              <td>{user._id}</td>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
-              <td>{user.password}</td>
-            </tr>
-          ))}
+          {filteredData.length > 0 ?
+            (filteredData.map((user,i) => (
+              <tr key={user._id}>
+                <td>{i+1}</td>
+                <td>{user._id}</td>
+                <td>{user.name}</td>
+                <td>{user.email}</td>
+                <td>{user.password}</td>
+              </tr>
+            ))) : (
+              <tr>
+                <td colSpan="5" className="center-text">No results found</td>
+              </tr>
+            )
+          }
         </tbody>
       </table>
       <div>
